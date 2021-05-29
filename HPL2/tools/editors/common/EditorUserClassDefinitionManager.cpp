@@ -503,9 +503,13 @@ bool cEditorUserClassDefinition::Create(const tString& asFilename, int alLoadFla
 	if(pDoc==NULL ||
 		pDoc->GetFirstElement("Types")==NULL)
 	{
-		int lRow = pDoc->GetErrorRow();
-		int lCol = pDoc->GetErrorCol();
-		pRes->DestroyXmlDocument(pDoc);
+		int lRow, lCol;
+		if (pDoc != NULL)
+		{
+			lRow = pDoc->GetErrorRow();
+			lCol = pDoc->GetErrorCol();
+			pRes->DestroyXmlDocument(pDoc);
+		}
 
 		tString sError = (pDoc==NULL)?"file not found":("error found in line " + cString::ToString(lRow) + ", column " + cString::ToString(lCol));
 		FatalError("Failed compilation of Custom Variable definition %s: %s\n", 
