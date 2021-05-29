@@ -217,7 +217,7 @@ namespace hpl {
 	{
 		cVector2l vRelfectionSize = cVector2l(mvScreenSize.x/mlReflectionSizeDiv, mvScreenSize.y/mlReflectionSizeDiv);
 
-		Log("Setting up G-Bugger: type: %d texturenum: %d\n", mGBufferType, mlNumOfGBufferTextures);
+		Log("Setting up G-Buffer: type: %d texturenum: %d\n", mGBufferType, mlNumOfGBufferTextures);
 		////////////////////////////////////
 		//Create G-Buffer textures
 		for(int i=0; i<mlNumOfGBufferTextures; ++i)
