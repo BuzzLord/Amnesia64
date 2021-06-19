@@ -1,0 +1,4 @@
+amnesia/utils/shaders/create_tex2d.sh eol=lf
+amnesia/utils/shaders/core/*.patch eol=lf
+amnesia/utils/shaders/game/*.patch eol=lf
+

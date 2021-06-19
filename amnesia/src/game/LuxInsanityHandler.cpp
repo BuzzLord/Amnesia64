@@ -492,7 +492,7 @@ void cLuxInstanityEvent_SoundStream::OnStart()
 	
 	if(msFadeImageFile != "")
 	{
-		mpFadeImage = gpBase->mpEngine->GetGui()->CreateGfxTexture(msFadeImageFile, eGuiMaterial_Alpha, eTextureType_Rect);
+		mpFadeImage = gpBase->mpEngine->GetGui()->CreateGfxTexture(msFadeImageFile, eGuiMaterial_Alpha, eTextureType_2D);
 	}
 }
 

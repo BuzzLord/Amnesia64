@@ -270,9 +270,11 @@ namespace hpl {
 		//Init the resources
 		mpResources->Init(mpGraphics,mpSystem, mpSound,mpScene,mpGui, mpPhysics);
 
+		cVector2l vRenderSize = apVars->mGraphics.mvScreenSize;
+
 		//Init the graphics
-		mpGraphics->Init(	apVars->mGraphics.mvScreenSize.x,
-							apVars->mGraphics.mvScreenSize.y,
+		mpGraphics->Init(	vRenderSize.x,
+							vRenderSize.y,
 							apVars->mGraphics.mlDisplay,
 							apVars->mGraphics.mlScreenBpp,
 							apVars->mGraphics.mbFullscreen,
@@ -280,6 +282,7 @@ namespace hpl {
 							apVars->mGraphics.mGpuProgramFormat,
 							apVars->mGraphics.msWindowCaption,
 							apVars->mGraphics.mvWindowPosition,
+							apVars->mGraphics.mvScreenSize,
 							mpResources,alHplSetupFlags);
 		
 		//Init Sound

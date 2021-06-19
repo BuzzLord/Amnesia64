@@ -69,7 +69,7 @@ namespace hpl {
 		float GetT();
 		float GetTimeCount();
 		void SetTimeCount(float afX);
-		int GetCurrentLowlevelHandle();
+		unsigned int GetCurrentLowlevelHandle();
 
 		/// SDL / OGL Specific ///////////
 

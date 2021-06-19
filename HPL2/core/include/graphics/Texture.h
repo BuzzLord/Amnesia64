@@ -123,7 +123,7 @@ namespace hpl {
 		virtual float GetT()=0;
 		virtual float GetTimeCount()=0;
 		virtual void SetTimeCount(float afX)=0;
-		virtual int GetCurrentLowlevelHandle()=0;
+		virtual unsigned int GetCurrentLowlevelHandle()=0;
 
 	protected:
 		eTextureUsage mUsage;

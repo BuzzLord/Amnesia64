@@ -167,7 +167,7 @@ namespace hpl {
 
 	void iPostEffect::GetTextureUvPosAndSize(const cVector2f& avTexSize, cVector2f& avUvPos,  cVector2f& avUvSize)
 	{
-		cVector2f vScreenSizeFloat = mpLowLevelGraphics->GetScreenSizeFloat();
+		cVector2f vScreenSizeFloat = mpLowLevelGraphics->GetRenderSizeFloat();
 		cRenderTarget *pRenderTarget = mpCurrentComposite->GetCurrentRenderTarget();
 		cVector2l vRenderTargetSize = mpCurrentComposite->GetRenderTargetSize();
 		cVector2f vViewportSize((float)vRenderTargetSize.x, (float)vRenderTargetSize.y);
@@ -176,8 +176,10 @@ namespace hpl {
 		cVector2f vRelPos = vViewportPos / vScreenSizeFloat;
 		cVector2f vRelSize = vViewportSize / vScreenSizeFloat;
 
-		avUvPos = vRelPos * avTexSize;
-		avUvSize = vRelSize * avTexSize;
+		//avUvPos = vRelPos * avTexSize;
+		//avUvSize = vRelSize * avTexSize;
+		avUvPos = vRelPos;
+		avUvSize = vRelSize;
 	}
 
 	//-----------------------------------------------------------------------
@@ -188,7 +190,7 @@ namespace hpl {
 
 		/////////////////////
 		//Check if texture is same size as screen, if so no need do any extra calcs
-		if(pTex->GetSizeInt2D() == mpLowLevelGraphics->GetScreenSizeInt())
+		if(pTex->GetSizeInt2D() == mpLowLevelGraphics->GetRenderSizeInt())
 		{
 			mpCurrentComposite->SetFrameBuffer(apFrameBuffer,true);
 		}
@@ -200,8 +202,8 @@ namespace hpl {
 			cVector2f vUvPos, vUvSize;
 			GetTextureUvPosAndSize(vTexSize,vUvPos, vUvSize);
 
-			cVector2l vTargetPos((int)(vUvPos.x+0.5f), (int)(vUvPos.y+0.5f));		
-			cVector2l vTargetSize((int)(vUvSize.x+0.5f), (int)(vUvSize.y+0.5f));
+			cVector2l vTargetPos((int)((vUvPos.x * vTexSize.x) + 0.5f), (int)((vUvPos.y * vTexSize.y) + 0.5f));
+			cVector2l vTargetSize((int)((vUvSize.x * vTexSize.x) + 0.5f), (int)((vUvSize.y * vTexSize.y) + 0.5f));
 
 			mpLowLevelGraphics->SetCurrentFrameBuffer(apFrameBuffer, vTargetPos, vTargetSize);
 		}
@@ -216,8 +218,8 @@ namespace hpl {
 		GetTextureUvPosAndSize(vTexSize,vUvPos,vUvSize);
 
 		mpCurrentComposite->DrawQuad(avPos,avSize,
-									cVector2f(vUvPos.x, (vTexSize.y - vUvSize.y)-vUvPos.y), 
-									cVector2f(vUvPos.x + vUvSize.x,vTexSize.y - vUvPos.y),
+									cVector2f(vUvPos.x, (1.0f - vUvSize.y) - vUvPos.y), 
+									cVector2f(vUvPos.x + vUvSize.x, 1.0f - vUvPos.y),
 									abFlipY);
 	}
 
@@ -233,8 +235,8 @@ namespace hpl {
 		{
 			cVector2f vUvPos, vUvSize;
 			GetTextureUvPosAndSize(vTexSize[i],vUvPos,vUvSize);
-			vTexMin[i] = cVector2f(vUvPos.x, (vTexSize[i].y - vUvSize.y)-vUvPos.y); 
-			vTexMax[i] = cVector2f(vUvPos.x + vUvSize.x,vTexSize[i].y - vUvPos.y);
+			vTexMin[i] = cVector2f(vUvPos.x, (1.0f - vUvSize.y) - vUvPos.y); 
+			vTexMax[i] = cVector2f(vUvPos.x + vUvSize.x, 1.0f - vUvPos.y);
 		}
 
 		mpCurrentComposite->DrawQuad(cVector2f(0,0),1,vTexMin[0],vTexMax[0],vTexMin[1],vTexMax[1],abFlipY0,abFlipY1);

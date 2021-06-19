@@ -206,10 +206,16 @@ namespace hpl {
 			glTexSubImage1D(GLTarget,alLevel,avOffset.x, avSize.x,
 							GLFormat,GL_UNSIGNED_BYTE,apData);
 		}
-		else if(mType == eTextureType_2D || mType == eTextureType_Rect)
+		else if(mType == eTextureType_2D)
 		{
 			glTexSubImage2D(GLTarget,alLevel,avOffset.x,avOffset.y, avSize.x,avSize.y,
 							GLFormat,GL_UNSIGNED_BYTE,apData);
+		}
+		else if(mType == eTextureType_Rect)
+		{
+			Warning("Texture set with type Rect! %s\n", msName);
+			glTexSubImage2D(GLTarget, alLevel, avOffset.x, avOffset.y, avSize.x, avSize.y,
+							GLFormat, GL_UNSIGNED_BYTE, apData);
 		}
 		else if(mType == eTextureType_3D)
 		{
@@ -336,7 +342,7 @@ namespace hpl {
 	{
 		mfTimeCount = afX;
 	}
-	int cSDLTexture::GetCurrentLowlevelHandle()
+	unsigned int cSDLTexture::GetCurrentLowlevelHandle()
 	{
 		return GetTextureHandle();
 	}
@@ -693,10 +699,10 @@ namespace hpl {
 	{
 		/////////////////////////////
 		//Check so size is power of 2
-		if((!cMath::IsPow2(avSize.x) || !cMath::IsPow2(avSize.y)) && mType != eTextureType_Rect)
-		{
-			Warning("Texture '%s' does not have a pow2 size!\n",msName.c_str());
-		}
+		//if ((!cMath::IsPow2(avSize.x) || !cMath::IsPow2(avSize.y)) && mType != eTextureType_Rect)
+		//{
+		//	Warning("Texture '%s' does not have a pow2 size!\n",msName.c_str());
+		//}
 
 		//////////////////////////////
 		//Setup properties

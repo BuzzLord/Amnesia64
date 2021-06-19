@@ -391,9 +391,15 @@ namespace hpl {
 											const cColor& aColor, bool abMipMaps, 
 											bool abAddToList)
 	{
+		if (aTextureType == eTextureType_Rect)
+		{
+			Error("Texture %s tried to load as Rect texture!");
+			return NULL;
+		}
+
 		///////////////////
 		// Error check
-		if( aTextureType != eTextureType_2D && aTextureType != eTextureType_Rect )
+		if( aTextureType != eTextureType_2D )
 		{
 			Error("Texture %s could not be loaded because texture type param was not valid!\n",asFile.c_str());
 			return NULL;

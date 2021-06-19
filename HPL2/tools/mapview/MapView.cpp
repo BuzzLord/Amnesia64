@@ -616,7 +616,7 @@ public:
 		cVector2l vTestWindowSize(400,300);
 		mpTestFrameBuffer = gpEngine->GetGraphics()->CreateFrameBuffer("");
 
-		mpTestRenderTexture = gpEngine->GetGraphics()->CreateTexture("TestTarget",eTextureType_Rect,eTextureUsage_RenderTarget);
+		mpTestRenderTexture = gpEngine->GetGraphics()->CreateTexture("TestTarget",eTextureType_2D,eTextureUsage_RenderTarget);
 		mpTestRenderTexture->CreateFromRawData(cVector3l(vTestWindowSize.x, vTestWindowSize.y,1),ePixelFormat_RGBA, NULL);
 
 		mpTestRenderGfx = gpEngine->GetGui()->CreateGfxTexture(mpTestRenderTexture,false,eGuiMaterial_Diffuse);

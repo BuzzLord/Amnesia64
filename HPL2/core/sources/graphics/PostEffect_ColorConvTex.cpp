@@ -61,7 +61,7 @@ namespace hpl {
 			if(i==1) vars.Add("UseFadeAlpha");
 
 			mpProgram[i] = mpGraphics->CreateGpuProgramFromShaders("BloomBlur"+cString::ToString(i),"deferred_base_vtx.glsl",
-																	"posteffect_color_conv_tex_frag.glsl", &vars);
+																	"posteffect_2d_color_conv_tex_frag.glsl", &vars);
 			if(i==1)
 			{
 				if(mpProgram[i])

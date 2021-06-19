@@ -264,6 +264,7 @@ namespace hpl {
 
 			if(apTexture->GetType() == eTextureType_Rect)
 			{
+				Warning("Texture is Rect! %s\n", apTexture->GetName());
 				//If a rect, give new texture coordinates
 				
 				mvVtx[0].tex.x = avStartUV.x * vSize.x;
@@ -318,6 +319,7 @@ namespace hpl {
 
 			if(apTexture->GetType() == eTextureType_Rect)
 			{
+				Warning("Texture is Rect! %s\n", apTexture->GetName());
 				//If a rect, give new texture coordinates
 				
 				mvVtx[0].tex.x = avUVUpperLeft.x * vSize.x;

@@ -1509,7 +1509,7 @@ void iEditorBase::InitRenderTarget(const cVector2f& avSize)
 	lTexW = (int) avSize.x;
 	lTexH = (int) avSize.y;
 	
-	iTexture* pRenderTexture = pGfx->CreateTexture("RenderTexture",eTextureType_Rect, eTextureUsage_RenderTarget);
+	iTexture* pRenderTexture = pGfx->CreateTexture("RenderTexture",eTextureType_2D, eTextureUsage_RenderTarget);
 	pRenderTexture->SetWrapR(eTextureWrap_ClampToEdge);
 	pRenderTexture->SetWrapS(eTextureWrap_ClampToEdge);
 	pRenderTexture->CreateFromRawData(cVector3l(lTexW, lTexH, 0), ePixelFormat_RGBA, 0);

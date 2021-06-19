@@ -48,7 +48,7 @@ cLuxPostEffect_Insanity::cLuxPostEffect_Insanity(cGraphics *apGraphics, cResourc
 	// Create program
 	cParserVarContainer vars;
 	vars.Add("UseUv");
-	mpProgram = mpGraphics->CreateGpuProgramFromShaders("LuxInsanity","deferred_base_vtx.glsl", "posteffect_insanity_frag.glsl", &vars);
+	mpProgram = mpGraphics->CreateGpuProgramFromShaders("LuxInsanity","deferred_base_vtx.glsl", "posteffect_2d_insanity_frag.glsl", &vars);
 	if(mpProgram)
 	{
 		mpProgram->GetVariableAsId("afAlpha",kVar_afAlpha);
@@ -131,7 +131,7 @@ iTexture* cLuxPostEffect_Insanity::RenderEffect(iTexture *apInputTexture, iFrame
 	{
 		mpProgram->SetFloat(kVar_afAlpha, 1.0f);
 		mpProgram->SetFloat(kVar_afT, mfT);
-		mpProgram->SetVec2f(kVar_avScreenSize, mpLowLevelGraphics->GetScreenSizeFloat());
+		mpProgram->SetVec2f(kVar_avScreenSize, mpLowLevelGraphics->GetRenderSizeFloat());
 		mpProgram->SetFloat(kVar_afAmpT, fAmpT);
 		mpProgram->SetFloat(kVar_afWaveAlpha, mfWaveAlpha);
 		mpProgram->SetFloat(kVar_afZoomAlpha, mfZoomAlpha);

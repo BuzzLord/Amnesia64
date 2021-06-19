@@ -49,7 +49,7 @@ namespace hpl {
 		cParserVarContainer vars;
 		vars.Add("UseUv");
 
-		mpProgram = mpGraphics->CreateGpuProgramFromShaders("ImageTrail","deferred_base_vtx.glsl", "posteffect_image_trail_frag.glsl", &vars);
+		mpProgram = mpGraphics->CreateGpuProgramFromShaders("ImageTrail","deferred_base_vtx.glsl", "posteffect_2d_image_trail_frag.glsl", &vars);
 		if(mpProgram)
 		{
 			mpProgram->GetVariableAsId("afAlpha",kVar_afAlpha);
@@ -85,7 +85,7 @@ namespace hpl {
 	{
 		cVector2l vSize = mpLowLevelGraphics->GetScreenSizeInt();
 		
-		mpAccumTexture = mpGraphics->CreateTexture("ImageTrailTexture", eTextureType_Rect, eTextureUsage_RenderTarget);	
+		mpAccumTexture = mpGraphics->CreateTexture("ImageTrailTexture", eTextureType_2D, eTextureUsage_RenderTarget);	
 		mpAccumTexture->CreateFromRawData(cVector3l(vSize.x, vSize.y,1), ePixelFormat_RGB, NULL);
 
 		mpAccumBuffer = mpGraphics->CreateFrameBuffer("ImageTrailBuffer");

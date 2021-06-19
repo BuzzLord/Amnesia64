@@ -51,7 +51,7 @@ namespace hpl {
 
 		virtual bool Init(	int alWidth, int alHeight, int alDisplay, int alBpp, int abFullscreen, int alMultisampling,
 							eGpuProgramFormat aGpuProgramFormat, const tString& asWindowCaption,
-							const cVector2l &avWindowPos)=0;
+							const cVector2l &avWindowPos, const cVector2l &avWindowSize)=0;
 
 		virtual eGpuProgramFormat GetGpuProgramFormat()=0;
 		
@@ -85,6 +85,11 @@ namespace hpl {
 		 */
 		virtual cVector2f GetScreenSizeFloat()=0;
 		virtual const cVector2l& GetScreenSizeInt()=0;
+		/**
+		 * Get size of render target (not necessarily same as screen)
+		 */
+		virtual cVector2f GetRenderSizeFloat() = 0;
+		virtual const cVector2l& GetRenderSizeInt() = 0;
 
 		/*
 		* Get fullscreen mode

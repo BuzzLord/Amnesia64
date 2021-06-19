@@ -71,6 +71,8 @@ namespace hpl {
 
 	GLenum PixelFormatToGLFormat(ePixelFormat aFormat);
 	GLenum PixelFormatToGLInternalFormat(ePixelFormat aFormat);
+	ePixelFormat GLInternalFormatToPixelFormat(GLenum aFormat);
+
 	GLenum GetGLCompressionFormatFromPixelFormat(ePixelFormat aFormat);
 
 	GLenum TextureTypeToGLTarget(eTextureType aType);
@@ -107,7 +109,7 @@ namespace hpl {
 
 		bool Init(	int alWidth, int alHeight, int alDisplay, int alBpp, int abFullscreen, int alMultisampling,
 					eGpuProgramFormat aGpuProgramFormat,const tString& asWindowCaption,
-					const cVector2l &avWindowPos);
+					const cVector2l &avWindowPos, const cVector2l& avWindowSize);
 
 		eGpuProgramFormat GetGpuProgramFormat(){ return mGpuProgramFormat;}
 
@@ -140,6 +142,11 @@ namespace hpl {
 
 		cVector2f GetScreenSizeFloat();
 		const cVector2l& GetScreenSizeInt();
+
+		cVector2f GetRenderSizeFloat();
+		const cVector2l& GetRenderSizeInt();
+
+		void InspectTexture(GLuint alTexture);
 		
 		/////////////////////////////////////////////////////
 		/////////////// DATA CREATION //////////////////////
@@ -316,6 +323,7 @@ namespace hpl {
 
 	private:
         cVector2l mvScreenSize;
+        cVector2l mvWindowSize;
         int mlDisplay;
 		int mlMultisampling;
 		int mlBpp;

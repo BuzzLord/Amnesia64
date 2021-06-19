@@ -126,7 +126,7 @@ namespace hpl {
 	bool cGraphics::Init(	int alWidth, int alHeight, int alDisplay, int alBpp, int abFullscreen, 
 							int alMultisampling,eGpuProgramFormat aGpuProgramFormat,
 							const tString &asWindowCaption, const cVector2l &avWindowPos,
-							cResources* apResources,
+							const cVector2l& avWindowSize, cResources* apResources,
 							tFlag alHplSetupFlags)
 	{
 		Log("Initializing Graphics Module\n");
@@ -144,9 +144,9 @@ namespace hpl {
 		// LowLevel Init
 		if(alHplSetupFlags & eHplSetup_Screen)
 		{
-			Log("Init lowlevel graphics: %dx%d disp:%d bpp:%d fs:%d ms:%d gpufmt:%d cap:'%s' pos:(%dx%d)\n",alWidth,alHeight,alDisplay,alBpp,abFullscreen,alMultisampling,aGpuProgramFormat, asWindowCaption.c_str(), avWindowPos.x,avWindowPos.y);
-			mpLowLevelGraphics->Init(alWidth,alHeight,alDisplay,alBpp,abFullscreen,alMultisampling,aGpuProgramFormat,asWindowCaption,
-									avWindowPos);
+			Log("Init lowlevel graphics: %dx%d disp:%d bpp:%d fs:%d ms:%d gpufmt:%d cap:'%s' pos:(%dx%d) size:(%dx%d)\n",alWidth,alHeight,alDisplay,alBpp,abFullscreen,alMultisampling,aGpuProgramFormat, asWindowCaption.c_str(), avWindowPos.x,avWindowPos.y, avWindowSize.x,avWindowSize.y);
+			mpLowLevelGraphics->Init(alWidth,alHeight,alDisplay,alBpp,abFullscreen,alMultisampling,aGpuProgramFormat,
+										asWindowCaption, avWindowPos, avWindowSize);
 			mbScreenIsSetup = true;
 		}
 		else
@@ -299,7 +299,7 @@ namespace hpl {
 
 		//Create texture
 		tString sNameSuffix = cString::ToString(avSize.x)+"x"+cString::ToString(avSize.y)+":"+cString::ToString((int)aPixelFormat);
-		iTexture *pTexture = CreateTexture("TempBufferTexture"+sNameSuffix, eTextureType_Rect, eTextureUsage_RenderTarget);
+		iTexture *pTexture = CreateTexture("TempBufferTexture"+sNameSuffix, eTextureType_2D, eTextureUsage_RenderTarget);
 		pTexture->CreateFromRawData(cVector3l(avSize.x, avSize.y,0),aPixelFormat,NULL);
 		pTexture->SetWrapSTR(eTextureWrap_ClampToEdge);
 

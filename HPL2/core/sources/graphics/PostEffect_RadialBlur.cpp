@@ -49,7 +49,7 @@ namespace hpl {
 	cPostEffectType_RadialBlur::cPostEffectType_RadialBlur(cGraphics *apGraphics, cResources *apResources) : iPostEffectType("RadialBlur",apGraphics,apResources)
 	{
 		cParserVarContainer vars;
-		mpProgram = mpGraphics->CreateGpuProgramFromShaders("RadialBlur","deferred_base_vtx.glsl", "posteffect_radial_blur_frag.glsl", &vars);
+		mpProgram = mpGraphics->CreateGpuProgramFromShaders("RadialBlur","deferred_base_vtx.glsl", "posteffect_2d_radial_blur_frag.glsl", &vars);
 		if(mpProgram)
 		{
 			mpProgram->GetVariableAsId("afSize",kVar_afSize);
