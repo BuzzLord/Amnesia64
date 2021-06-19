@@ -1,0 +1,50 @@
+--- deferred_fog_frag.glsl	2021-05-15 13:57:28.576645100 -0600
++++ deferred_2d_fog_frag.glsl	2021-06-13 17:42:40.594367600 -0600
+@@ -5,8 +5,6 @@
+ ////////////////////////////////////////////////////////
+ #version 120
+ 
+-#extension GL_ARB_texture_rectangle : enable
+-
+ @include helper_float_packing.glsl
+ 
+ //--------------------------------------------------------------
+@@ -19,7 +17,7 @@
+ 
+ //--------------------------------------------------------------
+ 
+-uniform sampler2DRect  aDepthMap;
++uniform sampler2D  aDepthMap;
+ @define sampler_aDepthMap 0
+ 
+ @ifdef PackedDepth
+@@ -31,6 +29,7 @@
+ uniform vec2 avFogStartAndLength;
+ uniform vec4 avFogColor;
+ uniform float afFalloffExp;
++uniform vec2 avInvScreenSize;
+ 
+ //--------------------------------------------------------------
+ 
+@@ -67,12 +66,12 @@
+ 	////////////////////////////////////
+ 	// Get depth
+ 	@ifdef PackedDepth
+-		vec4 vDepthVal =  texture2DRect(aDepthMap, gl_FragCoord.xy);
++		vec4 vDepthVal =  texture2D(aDepthMap, gl_FragCoord.xy * avInvScreenSize);
+ 		float fDepth = -UnpackVec3ToFloat(vDepthVal.xyz) * afNegFarPlane;
+ 
+ 	//64 bit stores postion directly
+ 	@else
+-		float fDepth = -texture2DRect(aDepthMap, gl_FragCoord.xy).z;
++		float fDepth = -texture2D(aDepthMap, gl_FragCoord.xy * avInvScreenSize).z;
+ 	@endif
+ 	
+ 	////////////////////////////////////
+@@ -109,4 +108,4 @@
+ 	
+ 	gl_FragColor.xyz = avFogColor.xyz;
+ 	gl_FragColor.w = pow(fAmount, afFalloffExp) * avFogColor.w;
+-}
+\ No newline at end of file
++}
