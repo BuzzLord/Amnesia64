@@ -45,7 +45,7 @@ class FastRayTest
 
 	void Reset (dgFloat32 t) 
 	{
-		m_dpInv = m_dpBaseInv.Scale (dgFloat32 (1.0f) / t);
+		m_dpInv = m_dpBaseInv.Scale (dgFloat32 (1.0f) / (t + 1e-6f));
 	}
 
 	dgVector m_p0;
