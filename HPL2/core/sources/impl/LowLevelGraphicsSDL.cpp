@@ -177,7 +177,7 @@ namespace hpl {
 
 	bool cLowLevelGraphicsSDL::Init(int alWidth, int alHeight, int alDisplay, int alBpp, int abFullscreen, 
 		int alMultisampling, eGpuProgramFormat aGpuProgramFormat,const tString& asWindowCaption,
-		const cVector2l &avWindowPos)
+		const cVector2l &avWindowPos, const cVector2l& avWindowSize)
 	{
 		mvScreenSize.x = alWidth;
 		mvScreenSize.y = alHeight;
@@ -216,11 +216,12 @@ namespace hpl {
 				}
 			}
 		}
+		mvWindowSize = avWindowSize;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
         unsigned int mlFlags = SDL_WINDOW_OPENGL;
-        if (alWidth == 0 && alHeight == 0) {
-            mvScreenSize = cVector2l(800,600);
+        if (mvWindowSize.x == 0 && mvWindowSize.y == 0) {
+            mvWindowSize = cVector2l(800,600);
             mlFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
         } else if (abFullscreen) {
             mlFlags |= SDL_WINDOW_FULLSCREEN;
@@ -230,17 +231,17 @@ namespace hpl {
         Log(" Setting video mode: %d x %d - %d bpp\n",alWidth, alHeight, alBpp);
         mpScreen = SDL_CreateWindow(asWindowCaption.c_str(),
                                     SDL_WINDOWPOS_CENTERED_DISPLAY(mlDisplay), SDL_WINDOWPOS_CENTERED_DISPLAY(mlDisplay),
-                                    mvScreenSize.x, mvScreenSize.y, mlFlags);
+                                    mvWindowSize.x, mvWindowSize.y, mlFlags);
 		if(mpScreen==NULL)
         {
             // try disabling FSAA
 			Error("Could not set display mode setting a lower one! %s\n", SDL_GetError());
-			mvScreenSize = cVector2l(640,480);
+			mvWindowSize = cVector2l(640,480);
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
             mpScreen = SDL_CreateWindow(asWindowCaption.c_str(),
                                         SDL_WINDOWPOS_CENTERED_DISPLAY(mlDisplay), SDL_WINDOWPOS_CENTERED_DISPLAY(mlDisplay),
-                                        mvScreenSize.x, mvScreenSize.y, mlFlags);
+                                        mvWindowSize.x, mvWindowSize.y, mlFlags);
             if(mpScreen==NULL)
             {
                 FatalError("Unable to initialize display! %s\n", SDL_GetError());
@@ -255,7 +256,7 @@ namespace hpl {
             // update with the screen size ACTUALLY obtained
             int w,h;
             SDL_GetWindowSize(mpScreen, &w, &h);
-            mvScreenSize = cVector2l(w, h);
+            mvWindowSize = cVector2l(w, h);
         }
         mGLContext = SDL_GL_CreateContext(mpScreen);
 #else
@@ -270,9 +271,9 @@ namespace hpl {
 		mpScreen = SDL_SetVideoMode( alWidth, alHeight, alBpp, mlFlags);
 		if(mpScreen==NULL){
 			Error("Could not set display mode setting a lower one!\n");
-			mvScreenSize = cVector2l(640,480);
+			mvWindowSize = cVector2l(640,480);
 
-			mpScreen = SDL_SetVideoMode( mvScreenSize.x, mvScreenSize.y, alBpp, mlFlags);
+			mpScreen = SDL_SetVideoMode( mvWindowSize.x, mvWindowSize.y, alBpp, mlFlags);
 			if(mpScreen==NULL)
 			{
 				FatalError("Unable to initialize display!\n");
@@ -288,8 +289,8 @@ namespace hpl {
 		{
 			//SetWindowCaption(asWindowCaption);
 		}
-        // update with the screen size ACTUALLY obtained
-        mvScreenSize = cVector2l(mpScreen->w, mpScreen->h);
+		// update with the screen size ACTUALLY obtained
+		mvWindowSize = cVector2l(mpScreen->w, mpScreen->h);
 #   ifdef _WIN32
 		//////////////////////////////
 		// Set up window position
@@ -417,8 +418,8 @@ namespace hpl {
 
 		mpFrameBuffer = NULL;
 		mvFrameBufferPos =0;
-		mvFrameBufferSize = mvScreenSize;
-		mvFrameBufferTotalSize = mvScreenSize;
+		mvFrameBufferSize = mvWindowSize;
+		mvFrameBufferTotalSize = mvWindowSize;
 
 
 		///////////////////////////////
@@ -766,14 +767,75 @@ namespace hpl {
 	{
 		;
 
-		return cVector2f((float)mvScreenSize.x, (float)mvScreenSize.y);
+		return cVector2f((float)mvWindowSize.x, (float)mvWindowSize.y);
 	}
 
 	const cVector2l& cLowLevelGraphicsSDL::GetScreenSizeInt()
 	{
 		;
 
+		return mvWindowSize;
+	}
+
+	cVector2f cLowLevelGraphicsSDL::GetRenderSizeFloat()
+	{
+		;
+
+		return cVector2f((float)mvScreenSize.x, (float)mvScreenSize.y);
+	}
+
+	const cVector2l& cLowLevelGraphicsSDL::GetRenderSizeInt()
+	{
+		;
+
 		return mvScreenSize;
+	}
+
+
+	//-----------------------------------------------------------------------
+
+	// Inspect Texture for Debugging!
+	void cLowLevelGraphicsSDL::InspectTexture(GLuint alTexture)
+	{
+		GLint width;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_WIDTH, &width);
+		GLint height;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_HEIGHT, &height);
+		GLint depth;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_DEPTH, &depth);
+		GLint internalFormat;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_INTERNAL_FORMAT, &internalFormat);
+
+		GLint redType;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_RED_TYPE, &redType);
+		GLint greenType;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_GREEN_TYPE, &greenType);
+		GLint blueType;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_BLUE_TYPE, &blueType);
+		GLint alphaType;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_ALPHA_TYPE, &alphaType);
+		GLint depthType;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_DEPTH_TYPE, &depthType);
+
+		GLint redSize;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_RED_SIZE, &redSize);
+		GLint greenSize;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_GREEN_SIZE, &greenSize);
+		GLint blueSize;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_BLUE_SIZE, &blueSize);
+		GLint alphaSize;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_ALPHA_SIZE, &alphaSize);
+		GLint depthSize;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_DEPTH_SIZE, &depthSize);
+
+		GLint compressed;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_COMPRESSED, &compressed);
+		GLint compressedSize;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &compressedSize);
+		GLint bufferOffset;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_BUFFER_OFFSET, &bufferOffset);
+		GLint bufferSize;
+		glGetTextureLevelParameteriv(alTexture, 0, GL_TEXTURE_BUFFER_SIZE, &bufferSize);
 	}
 
 	//-----------------------------------------------------------------------
@@ -1015,7 +1077,7 @@ namespace hpl {
 		/////////////////////////////////////
 		//Get framebuffer size
 		if(mpFrameBuffer)	mvFrameBufferTotalSize = mpFrameBuffer->GetSize();
-		else				mvFrameBufferTotalSize = mvScreenSize;
+		else				mvFrameBufferTotalSize = mvWindowSize;
 		
 		cVector2l vFrameBufferSize = avSize;
 		if(vFrameBufferSize.x <0 || vFrameBufferSize.y<0)
@@ -1037,7 +1099,7 @@ namespace hpl {
 			}
 			else
 			{
-				vFrameBufferPos.y = (mvScreenSize.y - vFrameBufferSize.y)-vFrameBufferPos.y;
+				vFrameBufferPos.y = (mvWindowSize.y - vFrameBufferSize.y)-vFrameBufferPos.y;
 			}
 			glViewport(vFrameBufferPos.x,vFrameBufferPos.y,vFrameBufferSize.x, vFrameBufferSize.y);
 		}
@@ -1330,7 +1392,7 @@ namespace hpl {
 
 		cVector2l vFrameBufferSize;
 		if(mpFrameBuffer)	vFrameBufferSize = mpFrameBuffer->GetSize();
-		else				vFrameBufferSize = mvScreenSize;
+		else				vFrameBufferSize = mvWindowSize;
 
 		glScissor(avPos.x, (vFrameBufferSize.y - avPos.y)-avSize.y, avSize.x, avSize.y);
 	}
@@ -1539,13 +1601,11 @@ namespace hpl {
 				glDisable(LastTarget);
 			}
 
-			cSDLTexture *pSDLTex = static_cast<cSDLTexture*> (apTex);
-
-			glBindTexture(NewTarget, pSDLTex->GetTextureHandle());
+			glBindTexture(NewTarget, apTex->GetCurrentLowlevelHandle());
 			glEnable(NewTarget);
 
 			//if it is a render target we need to do some more binding.
-			if(pSDLTex->GetUsage() == eTextureUsage_RenderTarget)
+			if(apTex->GetUsage() == eTextureUsage_RenderTarget)
 			{
 				//TODO: Do something else?
 			}
@@ -2472,6 +2532,37 @@ namespace hpl {
 		};
 
 		return 0;
+	}
+
+	//-------------------------------------------------
+
+	ePixelFormat GLInternalFormatToPixelFormat(GLenum aFormat)
+	{
+		;
+
+		switch (aFormat)
+		{
+		case GL_ALPHA:					return ePixelFormat_Alpha;
+		case GL_LUMINANCE:				return ePixelFormat_Luminance;
+		case GL_LUMINANCE_ALPHA:		return ePixelFormat_LuminanceAlpha;
+		case GL_RGB:					return ePixelFormat_RGB;
+		case GL_RGBA:					return ePixelFormat_RGBA;
+		case GL_DEPTH_COMPONENT16:		return ePixelFormat_Depth16;
+		case GL_DEPTH_COMPONENT24:		return ePixelFormat_Depth24;
+		case GL_DEPTH_COMPONENT32:		return ePixelFormat_Depth32;
+		case GL_ALPHA16F_ARB:			return ePixelFormat_Alpha16;
+		case GL_LUMINANCE16F_ARB:		return ePixelFormat_Luminance16;
+		case GL_LUMINANCE_ALPHA16F_ARB:	return ePixelFormat_LuminanceAlpha16;
+		case GL_RGB16F_ARB:				return ePixelFormat_RGB16;
+		case GL_RGBA16F_ARB:			return ePixelFormat_RGBA16;
+		case GL_ALPHA32F_ARB:			return ePixelFormat_Alpha32;
+		case GL_LUMINANCE32F_ARB:		return ePixelFormat_Luminance32;
+		case GL_LUMINANCE_ALPHA32F_ARB: return ePixelFormat_LuminanceAlpha32;
+		case GL_RGB32F_ARB:				return ePixelFormat_RGB32;
+		case GL_RGBA32F_ARB:			return ePixelFormat_RGBA32;
+		};
+
+		return ePixelFormat_Unknown;
 	}
 
 	//-------------------------------------------------

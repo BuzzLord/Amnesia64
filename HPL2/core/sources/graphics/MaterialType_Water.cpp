@@ -137,7 +137,7 @@ namespace hpl {
 		defaultVars.Add("UseNormalMapping");
 		if(iRenderer::GetRefractionEnabled())	defaultVars.Add("UseRefraction");
         				
-		mpProgramManager->SetupGenerateProgramData(	eMaterialRenderMode_Diffuse,"Diffuse","deferred_base_vtx.glsl", "water_surface_frag.glsl", 
+		mpProgramManager->SetupGenerateProgramData(	eMaterialRenderMode_Diffuse,"Diffuse","deferred_base_vtx.glsl", "water_2d_surface_frag.glsl", 
 											vDiffuseFeatureVec,kDiffuseFeatureNum, defaultVars);
 		
 

@@ -154,7 +154,7 @@ cLuxInventory::cLuxInventory() : iLuxUpdateable("LuxInventory")
  
 	cParserVarContainer programVars;
 	mpEffectProgram = mpGraphics->CreateGpuProgramFromShaders("InventoryEffect","inventory_screen_effect_vtx.glsl",
-																"inventory_screen_effect_frag.glsl", &programVars);
+																"inventory_2d_screen_effect_frag.glsl", &programVars);
 
 	mpFontDefault = NULL;
 	mpFontHeader = NULL;
@@ -1545,11 +1545,11 @@ void cLuxInventory::CreateScreenTextures()
 	cVector3l vTexSize = pLowGfx->GetScreenSizeInt();
 	vTexSize.z = 0;
 
-	mpScreenTexture = mpGraphics->CreateTexture("Screen",eTextureType_Rect,eTextureUsage_RenderTarget);
+	mpScreenTexture = mpGraphics->CreateTexture("Screen",eTextureType_2D,eTextureUsage_RenderTarget);
 	mpScreenTexture->CreateFromRawData(vTexSize,ePixelFormat_RGBA,NULL);
 	mpScreenTexture->SetWrapSTR(eTextureWrap_ClampToEdge);
 
-	mpScreenBgTexture = mpGraphics->CreateTexture("ScreenBlur",eTextureType_Rect,eTextureUsage_RenderTarget);
+	mpScreenBgTexture = mpGraphics->CreateTexture("ScreenBlur",eTextureType_2D,eTextureUsage_RenderTarget);
 	mpScreenBgTexture->CreateFromRawData(vTexSize,ePixelFormat_RGBA,NULL);
 
 	mpScreenGfx = mpGui->CreateGfxTexture(mpScreenTexture,false,eGuiMaterial_Diffuse);
@@ -1591,7 +1591,7 @@ void cLuxInventory::RenderBackgroundImage()
 
 	pLowGfx->SetTexture(0,mpScreenTexture);
 
-	pLowGfx->DrawQuad(0,mvScreenSize,cVector2f(0, mvScreenSize.y),cVector2f(mvScreenSize.x,0),cColor(1,1));
+	pLowGfx->DrawQuad(0,mvScreenSize,cVector2f(0.0f, 1.0f),cVector2f(1.0f,0.0f),cColor(1,1));
 	mpEffectProgram->UnBind();
 
 	//Copy a copy of the full gui with all HUD!

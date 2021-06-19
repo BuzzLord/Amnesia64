@@ -27,7 +27,7 @@
 
 
 namespace hpl {
-	
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// DEPTH AND STENCIL BUFFER
@@ -162,7 +162,11 @@ namespace hpl {
 	{
 		if(CheckIfNullTexture(GL_COLOR_ATTACHMENT0_EXT,alColorIdx,apTexture)) return;
 
-		if(apTexture->GetType() != eTextureType_2D && apTexture->GetType() != eTextureType_Rect) return;
+		if (apTexture->GetType() == eTextureType_Rect) {
+			Error("Tried to set FrameBuffer Texture to Rect Texture!\n");
+			return;
+		}
+		if(apTexture->GetType() != eTextureType_2D) return;
 
 		AttachTexture(GL_COLOR_ATTACHMENT0_EXT,alColorIdx,apTexture,alMipmapLevel,0);
 	}
@@ -195,7 +199,11 @@ namespace hpl {
 	{
 		if(CheckIfNullTexture(GL_DEPTH_ATTACHMENT_EXT,0,apTexture)) return;
 
-		if(apTexture->GetType() != eTextureType_2D && apTexture->GetType() != eTextureType_Rect) return;
+		if (apTexture->GetType() == eTextureType_Rect) {
+			Error("Tried to set FrameBuffer Depth Texture to Rect Texture!\n");
+			return;
+		}
+		if(apTexture->GetType() != eTextureType_2D) return;
 		//TODO: Check so it is a depth texture.
 		
 		AttachTexture(GL_DEPTH_ATTACHMENT_EXT,0,apTexture,alMipmapLevel,0);
@@ -396,21 +404,19 @@ namespace hpl {
 		eTextureType texType = apTexture->GetType();
 		GLenum GLTarget = TextureTypeToGLTarget(texType);
 
-		cSDLTexture *pTextureSDL = static_cast<cSDLTexture*>(apTexture); 
-
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mlHandle);
 		
 
 		/////////////////////////////////////////////////
 		//2D, Rect or Cube Texture
-        if(	texType == eTextureType_2D || 
+		if(	texType == eTextureType_2D || 
 			texType == eTextureType_Rect || 
 			texType == eTextureType_CubeMap)
 		{
 			glFramebufferTexture2DEXT(	GL_FRAMEBUFFER_EXT, alAttachmentType + alAttachmentIdx, 
 										texType == eTextureType_CubeMap ? 
-											GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + alExtra : GLTarget, 
-										pTextureSDL->GetTextureHandle(),alMipmapLevel);
+										GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + alExtra : GLTarget, 
+										apTexture->GetCurrentLowlevelHandle(),alMipmapLevel);
 
 		}
 		/////////////////////////////////////////////////
@@ -419,7 +425,7 @@ namespace hpl {
 		{
 			glFramebufferTexture3DEXT(	GL_FRAMEBUFFER_EXT, alAttachmentType + alAttachmentIdx, 
 										GLTarget, 
-										pTextureSDL->GetTextureHandle(),alMipmapLevel,
+										apTexture->GetCurrentLowlevelHandle(),alMipmapLevel,
 										alExtra);
 		}
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);

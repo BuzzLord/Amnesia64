@@ -278,8 +278,8 @@ void cEditorThumbnailBuilder::BuildThumbnailFromImage(const tWString& asImageFil
 	int lWidth = pTex->GetWidth();
 	int lHeight = pTex->GetHeight();
 
-	if(cMath::IsPow2(lWidth)== false || cMath::IsPow2(lHeight)==false)
-		pTex = pManager->Create2D(cString::To8Char(asImageFilename), true, eTextureType_Rect);	
+	//if(cMath::IsPow2(lWidth)== false || cMath::IsPow2(lHeight)==false)
+	//	pTex = pManager->Create2D(cString::To8Char(asImageFilename), true, eTextureType_Rect);	
 
 	iLowLevelGraphics* pGfx = mpEditor->GetEngine()->GetGraphics()->GetLowLevel();
 

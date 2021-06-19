@@ -344,9 +344,9 @@ eTextureType cTextureWrapper::GetTextureTypeFromBitmap(cBitmap* apBmp)
 		if(vSize.y==1)
 			return eTextureType_1D;
 		
-		if(vSize.x%2!=0 || 
-			vSize.y%2!=0)
-			return eTextureType_Rect;
+		//if(vSize.x%2!=0 || 
+		//	vSize.y%2!=0)
+		//	return eTextureType_Rect;
 
 		return eTextureType_2D;
 	}
@@ -690,6 +690,7 @@ void cMaterialWrapper::UpdateMaterialInMemory(const tString& asName)
 				pNewTex = pTexMgr->CreateCubeMap(sName, bMipMaps);
 				break;
 			case eTextureType_Rect:
+				Error("UpdateMaterialInMemory for Rect Texture %s", sName);
 				pNewTex = pTexMgr->Create2D(sName, bMipMaps, eTextureType_Rect);
 				break;
 			}
@@ -1554,7 +1555,7 @@ void cEditorWindowMaterialEditor::OnInitLayout()
 		SetGuiViewportPos(cVector3f(10,10,0.1f));
 		SetGuiViewportSize(cVector2f(430));
 
-		iTexture* pTex = mpEditor->GetEngine()->GetGraphics()->CreateTexture("", eTextureType_Rect, eTextureUsage_RenderTarget);
+		iTexture* pTex = mpEditor->GetEngine()->GetGraphics()->CreateTexture("", eTextureType_2D, eTextureUsage_RenderTarget);
 		pTex->SetWrapR(eTextureWrap_ClampToEdge);
 		pTex->SetWrapS(eTextureWrap_ClampToEdge);
 		pTex->CreateFromRawData(cVector3l(512,512,0), ePixelFormat_RGB, 0);

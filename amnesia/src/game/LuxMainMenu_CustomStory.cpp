@@ -182,7 +182,7 @@ void cLuxMainMenu_CustomStory::SetCurrentStory(cLuxCustomStorySettings* apStory)
 			pGfx = NULL;
 		}
 
-		iTexture* pTex = gpBase->mpEngine->GetResources()->GetTextureManager()->Create2D(mpStory->msImgFile, false, eTextureType_Rect);
+		iTexture* pTex = gpBase->mpEngine->GetResources()->GetTextureManager()->Create2D(mpStory->msImgFile, false, eTextureType_2D);
 		if(pTex)
 			pGfx = mpGui->CreateGfxTexture(pTex, true, eGuiMaterial_Alpha);
 

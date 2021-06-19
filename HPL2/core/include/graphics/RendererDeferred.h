@@ -236,6 +236,8 @@ namespace hpl {
 		void SetupLightProgramVariables(iGpuProgram *apProgram, cDeferredLight* apLightData);
 		iGpuProgram* SetupProgramAndTextures(cDeferredLight* apLightData, tFlag alExtraFlags);
 		iVertexBuffer* GetLightShape(iLight *apLight, eDeferredShapeQuality aQuality);
+
+		void GetViewportPosAndSize(cVector2f& avViewportPos, cVector2f& avViewportSize);
 		
 		
 		iVertexBuffer *mpShapeSphere[eDeferredShapeQuality_LastEnum];

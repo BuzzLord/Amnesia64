@@ -112,7 +112,7 @@ namespace hpl {
 		void DrawWireFrame(iVertexBuffer *apVtxBuffer, const cColor &aColor);
 		
 		iTexture* CreateRenderTexture(	const tString& asName, const cVector2l& avSize, ePixelFormat aPixelFormat,
-										eTextureFilter aFilter = eTextureFilter_Bilinear, eTextureType aType= eTextureType_Rect);
+										eTextureFilter aFilter = eTextureFilter_Bilinear, eTextureType aType= eTextureType_2D);
 
 		void CopyFrameBufferToTexure(	iTexture *apTexture, const cVector2l& avPos, const cVector2l& avSize, const cVector2l& avTextureOffset,
 										bool abTextureOffsetUsesRenderTargetPos);
@@ -132,6 +132,8 @@ namespace hpl {
 		cVector2l mvRenderTargetSize;		//Use this when ever some calculations involving the size of rendertarget is involved!
 		cVector2l mvCurrentFrameBufferSize;	//This shall NOT be used in calculations and is simply as a helper
 
+		cVector2l mvRenderSize;
+		cVector2f mvRenderSizeFloat;
 		cVector2l mvScreenSize;
 		cVector2f mvScreenSizeFloat;
 

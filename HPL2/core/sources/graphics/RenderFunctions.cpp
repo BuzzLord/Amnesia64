@@ -43,6 +43,9 @@ namespace hpl {
 	{
 		mpLowLevelGraphics = apLowLevelGraphics;
 
+		mvRenderSize = mpLowLevelGraphics->GetRenderSizeInt();
+		mvRenderSizeFloat = mpLowLevelGraphics->GetRenderSizeFloat();
+
 		mvScreenSize = mpLowLevelGraphics->GetScreenSizeInt();
 		mvScreenSizeFloat = mpLowLevelGraphics->GetScreenSizeFloat();
 	}
@@ -798,7 +801,7 @@ namespace hpl {
 		}
 		if(abInvertY)
 		{
-			mpLowLevelGraphics->DrawQuad(	aPos, avSize,cVector2f(avMinUV.x, avMaxUV.y),
+			mpLowLevelGraphics->DrawQuad(aPos, avSize,cVector2f(avMinUV.x, avMaxUV.y),
 				cVector2f(avMaxUV.x, avMinUV.y),aColor);
 		}
 		else

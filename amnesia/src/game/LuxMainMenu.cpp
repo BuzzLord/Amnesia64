@@ -198,7 +198,7 @@ cLuxMainMenu::cLuxMainMenu() : iLuxUpdateable("LuxDebugHandler")
 		
 		mpBlurProgram[i] = mpGraphics->CreateGpuProgramFromShaders("MainMenuBlur"+cString::ToString(i),
 																	"mainmenu_screen_blur_vtx.glsl",
-																	"mainmenu_screen_blur_frag.glsl",
+																	"mainmenu_2d_screen_blur_frag.glsl",
 																	&programVars);
 	}
 
@@ -1307,11 +1307,11 @@ void cLuxMainMenu::CreateScreenTextures()
 	cVector3l vTexSize = pLowGfx->GetScreenSizeInt();
 	vTexSize.z = 0;
 
-	mpScreenTexture = mpGraphics->CreateTexture("Screen",eTextureType_Rect,eTextureUsage_RenderTarget);
+	mpScreenTexture = mpGraphics->CreateTexture("Screen",eTextureType_2D,eTextureUsage_RenderTarget);
 	mpScreenTexture->CreateFromRawData(vTexSize,ePixelFormat_RGBA,NULL);
 	mpScreenTexture->SetWrapSTR(eTextureWrap_ClampToEdge);
 
-	mpScreenBlurTexture = mpGraphics->CreateTexture("ScreenBlur",eTextureType_Rect,eTextureUsage_RenderTarget);
+	mpScreenBlurTexture = mpGraphics->CreateTexture("ScreenBlur",eTextureType_2D,eTextureUsage_RenderTarget);
 	mpScreenBlurTexture->CreateFromRawData(vTexSize,ePixelFormat_RGBA,NULL);
 	
 	mpScreenGfx = mpGui->CreateGfxTexture(mpScreenTexture,false,eGuiMaterial_Diffuse);
@@ -1330,7 +1330,7 @@ void cLuxMainMenu::RenderBlur(iTexture *apInputTexture, iTexture *apTempTexture,
 
 	pLowGfx->SetTexture(0,apInputTexture);
 
-	pLowGfx->DrawQuad(0,mvScreenSize,cVector2f(0, mvScreenSize.y),cVector2f(mvScreenSize.x,0),cColor(1,1));
+	pLowGfx->DrawQuad(0,mvScreenSize,cVector2f(0.0f, 1.0f),cVector2f(1.0f,0.0f),cColor(1,1));
 	mpBlurProgram[0]->UnBind();
 
 	//Draw vertical blur to final from temp
@@ -1339,7 +1339,7 @@ void cLuxMainMenu::RenderBlur(iTexture *apInputTexture, iTexture *apTempTexture,
 
 	pLowGfx->SetTexture(0,apTempTexture);
 
-	pLowGfx->DrawQuad(0,mvScreenSize,cVector2f(0, mvScreenSize.y),cVector2f(mvScreenSize.x,0),cColor(1,1));
+	pLowGfx->DrawQuad(0,mvScreenSize,cVector2f(0.0f, 1.0f),cVector2f(1.0f,0.0f),cColor(1,1));
 	mpBlurProgram[1]->UnBind();
 }
 
@@ -1349,7 +1349,7 @@ void cLuxMainMenu::RenderBlurTexture()
 
 	//////////////////////////////
 	// Create frame buffers
-	iTexture* pTempBlurTexture = mpGraphics->CreateTexture("TempBlur",eTextureType_Rect,eTextureUsage_RenderTarget);
+	iTexture* pTempBlurTexture = mpGraphics->CreateTexture("TempBlur",eTextureType_2D,eTextureUsage_RenderTarget);
 	pTempBlurTexture->CreateFromRawData(cVector3l((int)mvScreenSize.x, (int)mvScreenSize.y,0),ePixelFormat_RGBA,NULL);
 	pTempBlurTexture->SetWrapSTR(eTextureWrap_ClampToEdge);
 	

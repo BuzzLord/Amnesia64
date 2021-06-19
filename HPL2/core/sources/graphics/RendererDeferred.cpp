@@ -164,6 +164,7 @@ namespace hpl {
 	#define kVar_afFalloffExp						20
 	#define kVar_afDepthDiffMul						21
 	#define kVar_afSkipEdgeLimit					22
+	#define kVar_avInvScreenSize					23
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -215,7 +216,7 @@ namespace hpl {
 	
 	bool cRendererDeferred::LoadData()
 	{
-		cVector2l vRelfectionSize = cVector2l(mvScreenSize.x/mlReflectionSizeDiv, mvScreenSize.y/mlReflectionSizeDiv);
+		cVector2l vRelfectionSize = cVector2l(mvRenderSize.x/mlReflectionSizeDiv, mvRenderSize.y/mlReflectionSizeDiv);
 
 		Log("Setting up G-Buffer: type: %d texturenum: %d\n", mGBufferType, mlNumOfGBufferTextures);
 		////////////////////////////////////
@@ -226,13 +227,13 @@ namespace hpl {
 			//ePixelFormat pixelFormat = ePixelFormat_RGBA16;
 
 			tString sName = "G-BufferTexure"+cString::ToString(i);
-			mpGBufferTexture[0][i] = CreateRenderTexture(sName, mvScreenSize,pixelFormat,eTextureFilter_Nearest);
+			mpGBufferTexture[0][i] = CreateRenderTexture(sName, mvRenderSize,pixelFormat,eTextureFilter_Nearest);
 			mpGBufferTexture[1][i] = CreateRenderTexture(sName+"_Reflection", vRelfectionSize, pixelFormat,eTextureFilter_Nearest);
 		}
 
 		////////////////////////////////////
 		//Create Depth and stencil
-		mpDepthStencil[0] = mpGraphics->CreateDepthStencilBuffer(mvScreenSize,24,8, false);
+		mpDepthStencil[0] = mpGraphics->CreateDepthStencilBuffer(mvRenderSize,24,8, false);
 		mpDepthStencil[1] = mpGraphics->CreateDepthStencilBuffer(vRelfectionSize, 24,8, false);
 		
 		////////////////////////////////////
@@ -305,8 +306,8 @@ namespace hpl {
 		
 		////////////////////////////////////
 		//Create Accumulation texture
-		mpAccumBufferTexture = mpGraphics->CreateTexture("AccumBiffer",eTextureType_Rect,eTextureUsage_RenderTarget);
-		mpAccumBufferTexture->CreateFromRawData(cVector3l(mvScreenSize.x, mvScreenSize.y,0),ePixelFormat_RGBA, NULL);
+		mpAccumBufferTexture = mpGraphics->CreateTexture("AccumBiffer",eTextureType_2D,eTextureUsage_RenderTarget);
+		mpAccumBufferTexture->CreateFromRawData(cVector3l(mvRenderSize.x, mvRenderSize.y,0),ePixelFormat_RGBA, NULL);
 		mpAccumBufferTexture->SetWrapSTR(eTextureWrap_ClampToEdge);
 
 		////////////////////////////////////
@@ -319,7 +320,7 @@ namespace hpl {
 
 		////////////////////////////////////
 		//Create Refraction texture
-		mpRefractionTexture = mpGraphics->GetTempFrameBuffer(mvScreenSize,ePixelFormat_RGBA,0)->GetColorBuffer(0)->ToTexture();
+		mpRefractionTexture = mpGraphics->GetTempFrameBuffer(mvRenderSize,ePixelFormat_RGBA,0)->GetColorBuffer(0)->ToTexture();
 		mpRefractionTexture->SetWrapSTR(eTextureWrap_ClampToEdge);
 
 		////////////////////////////////////
@@ -427,7 +428,7 @@ namespace hpl {
 			
 			mpFogProgramManager = hplNew(	cProgramComboManager, ("FogArea", mpGraphics, mpResources, 1));
 
-			mpFogProgramManager->SetupGenerateProgramData(0,"Fog","deferred_fog_vtx.glsl","deferred_fog_frag.glsl",gvFogAreaFeatureVec,kFogAreaFeatureNum,vars);
+			mpFogProgramManager->SetupGenerateProgramData(0,"Fog","deferred_fog_vtx.glsl","deferred_2d_fog_frag.glsl",gvFogAreaFeatureVec,kFogAreaFeatureNum,vars);
 
 			if(GetGBufferType() == eDeferredGBuffer_32Bit)
 					mpFogProgramManager->AddGenerateProgramVariableId("afNegFarPlane", kVar_afNegFarPlane,0);
@@ -438,6 +439,7 @@ namespace hpl {
 			mpFogProgramManager->AddGenerateProgramVariableId("avNegPlaneDistNeg",kVar_avNegPlaneDistNeg,0);
 			mpFogProgramManager->AddGenerateProgramVariableId("avNegPlaneDistPos",kVar_avNegPlaneDistPos,0);
 			mpFogProgramManager->AddGenerateProgramVariableId("afFalloffExp",kVar_afFalloffExp,0);
+			mpFogProgramManager->AddGenerateProgramVariableId("avInvScreenSize", kVar_avInvScreenSize, 0);
 		}
 		
 		////////////////////////////////////
@@ -462,13 +464,14 @@ namespace hpl {
 					if(i==1) vars.Add("UseSSAO");
 					mpLightBoxProgram[i] = mpProgramManager->CreateProgramFromShaders("LightBoxNormal",
 																					"deferred_base_vtx.glsl",
-																					"deferred_light_box_frag.glsl",
+																					"deferred_2d_light_box_frag.glsl",
 																					&vars,true);
 
 					vars.Clear();
 					if(mpLightBoxProgram[i])
 					{
 						mpLightBoxProgram[i]->GetVariableAsId("avLightColor",kVar_avLightColor);
+						mpLightBoxProgram[i]->GetVariableAsId("avInvScreenSize", kVar_avInvScreenSize);
 					}
 				}
 			}
@@ -497,7 +500,7 @@ namespace hpl {
 				if(mlNumOfGBufferTextures == 4)				defaultVars.Add("RenderTargets_4","");
 				else										defaultVars.Add("RenderTargets_3","");
 
-				mpProgramManager->SetupGenerateProgramData(	eDefferredProgramMode_Lights,"Lights", "deferred_base_vtx.glsl", "deferred_light_frag.glsl",gvLightFeatureVec,
+				mpProgramManager->SetupGenerateProgramData(	eDefferredProgramMode_Lights,"Lights", "deferred_base_vtx.glsl", "deferred_2d_light_frag.glsl",gvLightFeatureVec,
 													kLightFeatureNum,defaultVars);
 													//1, defaultVars);
 
@@ -511,6 +514,7 @@ namespace hpl {
 				mpProgramManager->AddGenerateProgramVariableId("a_mtxSpotViewProj", kVar_a_mtxSpotViewProj, eDefferredProgramMode_Lights);
 				mpProgramManager->AddGenerateProgramVariableId("a_mtxInvViewRotation", kVar_a_mtxInvViewRotation, eDefferredProgramMode_Lights);
 				mpProgramManager->AddGenerateProgramVariableId("avShadowMapOffsetMul", kVar_avShadowMapOffsetMul, eDefferredProgramMode_Lights);
+				mpProgramManager->AddGenerateProgramVariableId("avInvScreenSize", kVar_avInvScreenSize, eDefferredProgramMode_Lights);
 			}
 
 			//////////////////////////////
@@ -528,7 +532,7 @@ namespace hpl {
 		}
 		if(mbSSAOLoaded)
 		{
-			cVector2l vSSAOSize = mvScreenSize / mlSSAOBufferSizeDiv;
+			cVector2l vSSAOSize = mvRenderSize / mlSSAOBufferSizeDiv;
 			
 			/////////////////////////////////////
 			// Textures and frame buffers
@@ -564,7 +568,7 @@ namespace hpl {
 			if(mGBufferType == eDeferredGBuffer_32Bit)	programVars.Add("Deferred_32bit");
 			else										programVars.Add("Deferred_64bit");
 			programVars.Add("UseUv");
-			mpUnpackDepthProgram = mpGraphics->CreateGpuProgramFromShaders("UnpackDepth","deferred_base_vtx.glsl", "deferred_unpack_depth_frag.glsl",&programVars);
+			mpUnpackDepthProgram = mpGraphics->CreateGpuProgramFromShaders("UnpackDepth","deferred_base_vtx.glsl", "deferred_2d_unpack_depth_frag.glsl",&programVars);
 			if(mpUnpackDepthProgram)
 			{
 				mpUnpackDepthProgram->GetVariableAsId("afNegInvFarPlane",kVar_afNegInvFarPlane);
@@ -573,22 +577,23 @@ namespace hpl {
 			
 			//SSAO Blur programs (vertical and horizontal)
 			programVars.Add("BlurHorisontal");
-			mpSSAOBlurProgram[0] = mpGraphics->CreateGpuProgramFromShaders("SSAOBlurHori","deferred_ssao_blur_vtx.glsl", "deferred_ssao_blur_frag.glsl",&programVars);
+			mpSSAOBlurProgram[0] = mpGraphics->CreateGpuProgramFromShaders("SSAOBlurHori","deferred_ssao_blur_vtx.glsl", "deferred_2d_ssao_blur_frag.glsl",&programVars);
 			programVars.Clear();
-			mpSSAOBlurProgram[1] = mpGraphics->CreateGpuProgramFromShaders("SSAOBlurVert","deferred_ssao_blur_vtx.glsl", "deferred_ssao_blur_frag.glsl",&programVars);
+			mpSSAOBlurProgram[1] = mpGraphics->CreateGpuProgramFromShaders("SSAOBlurVert","deferred_ssao_blur_vtx.glsl", "deferred_2d_ssao_blur_frag.glsl",&programVars);
 
 			for(int i=0; i<2; ++i)
 			{
 				if(mpSSAOBlurProgram[i])
 				{
 					mpSSAOBlurProgram[i]->GetVariableAsId("afFarPlane",kVar_afFarPlane);
+					mpSSAOBlurProgram[i]->GetVariableAsId("avInvScreenSize", kVar_avInvScreenSize);
 				}
 			}
 			
 			//SSAO Rendering
 			programVars.Add("SampleNumDiv2", mlSSAONumOfSamples / 2);
 			mpSSAORenderProgram = mpGraphics->CreateGpuProgramFromShaders(	"SSAORender","deferred_ssao_render_vtx.glsl", 
-																			"deferred_ssao_render_frag.glsl",&programVars);
+																			"deferred_2d_ssao_render_frag.glsl",&programVars);
 			if(mpSSAORenderProgram)
 			{
 				mpSSAORenderProgram->GetVariableAsId("afFarPlane",kVar_afFarPlane);
@@ -613,8 +618,8 @@ namespace hpl {
 			// Textures and frame buffers
 
 			// Textures
-			mpEdgeSmooth_LinearDepthTexture = CreateRenderTexture("EdgeSmoothLinearDepth", mvScreenSize,ePixelFormat_RGB16);
-			mpEdgeSmooth_TempAccum = mpGraphics->GetTempFrameBuffer(mvScreenSize,ePixelFormat_RGBA,0)->GetColorBuffer(0)->ToTexture();
+			mpEdgeSmooth_LinearDepthTexture = CreateRenderTexture("EdgeSmoothLinearDepth", mvRenderSize,ePixelFormat_RGB16);
+			mpEdgeSmooth_TempAccum = mpGraphics->GetTempFrameBuffer(mvRenderSize,ePixelFormat_RGBA,0)->GetColorBuffer(0)->ToTexture();
 
 			//Frame buffers
 			mpEdgeSmooth_LinearDepthBuffer = mpGraphics->CreateFrameBuffer("EdgeSmoothLinearDepth");
@@ -630,7 +635,7 @@ namespace hpl {
 			if(mGBufferType == eDeferredGBuffer_32Bit)	programVars.Add("Deferred_32bit");
 			else										programVars.Add("Deferred_64bit");
 			programVars.Add("UseUv");
-			mpEdgeSmooth_UnpackDepthProgram = mpGraphics->CreateGpuProgramFromShaders("EdgeSmoothUnpackDepth","deferred_base_vtx.glsl", "deferred_unpack_depth_frag.glsl",&programVars);
+			mpEdgeSmooth_UnpackDepthProgram = mpGraphics->CreateGpuProgramFromShaders("EdgeSmoothUnpackDepth","deferred_base_vtx.glsl", "deferred_2d_unpack_depth_frag.glsl",&programVars);
 			if(mpEdgeSmooth_UnpackDepthProgram)
 			{
 				mpEdgeSmooth_UnpackDepthProgram->GetVariableAsId("afNegInvFarPlane",kVar_afNegInvFarPlane);
@@ -639,10 +644,11 @@ namespace hpl {
 
 			//Program for edge smoothing
 			programVars.Add("UseUv");
-			mpEdgeSmooth_RenderProgram =  mpGraphics->CreateGpuProgramFromShaders("EdgeSmoothRender","deferred_base_vtx.glsl", "deferred_edge_smooth_frag.glsl",&programVars);
+			mpEdgeSmooth_RenderProgram =  mpGraphics->CreateGpuProgramFromShaders("EdgeSmoothRender","deferred_base_vtx.glsl", "deferred_2d_edge_smooth_frag.glsl",&programVars);
 			if(mpEdgeSmooth_RenderProgram)
 			{
 				mpEdgeSmooth_RenderProgram->GetVariableAsId("afFarPlane",kVar_afFarPlane);
+				mpEdgeSmooth_RenderProgram->GetVariableAsId("avInvScreenSize", kVar_avInvScreenSize);
 			}
 		}
 
@@ -657,7 +663,7 @@ namespace hpl {
 		
 		////////////////////////////////////
 		//Quad used when rendering light.
-		mpFullscreenLightQuad = CreateQuadVertexBuffer(eVertexBufferType_Software,0,1,0,mvScreenSizeFloat, true);
+		mpFullscreenLightQuad = CreateQuadVertexBuffer(eVertexBufferType_Software,0,1,0,1, true);
 		
 		////////////////////////////////////
 		//Batch vertex buffer
@@ -820,14 +826,27 @@ namespace hpl {
 		////////////////////////////////////
 		//Draw the accumulation buffer to the current frame buffer
 		//Since the texture v coordinate is reversed, need to do some math.
-		cVector2f vViewportPos((float)mpCurrentRenderTarget->mvPos.x, (float)mpCurrentRenderTarget->mvPos.y);
-		cVector2f vViewportSize((float)mvRenderTargetSize.x, (float)mvRenderTargetSize.y);
+		cVector2f vViewportPos; //((float)mpCurrentRenderTarget->mvPos.x, (float)mpCurrentRenderTarget->mvPos.y);
+		cVector2f vViewportSize;// ((float)mvRenderTargetSize.x, (float)mvRenderTargetSize.y);
+		GetViewportPosAndSize(vViewportPos, vViewportSize);
 		DrawQuad(	cVector2f(0,0),1,
-					cVector2f(vViewportPos.x, (mvScreenSizeFloat.y - vViewportSize.y)-vViewportPos.y ), 
-					cVector2f(vViewportPos.x + vViewportSize.x,mvScreenSizeFloat.y - vViewportPos.y),
+					cVector2f(vViewportPos.x, (1.0f - vViewportSize.y) - vViewportPos.y ), 
+					cVector2f(vViewportPos.x + vViewportSize.x, 1.0f - vViewportPos.y),
 					true);
 
 		END_RENDER_PASS();
+	}
+
+	//-----------------------------------------------------------------------
+
+	void cRendererDeferred::GetViewportPosAndSize(cVector2f& avViewportPos, cVector2f& avViewportSize)
+	{
+		cVector2f vViewportPos((float)mpCurrentRenderTarget->mvPos.x, (float)mpCurrentRenderTarget->mvPos.y);
+		cVector2f vViewportSize((float)mvRenderTargetSize.x, (float)mvRenderTargetSize.y);
+		cVector2f vRenderSizeFloat = mpLowLevelGraphics->GetRenderSizeFloat();
+
+		avViewportPos = vViewportPos / vRenderSizeFloat;
+		avViewportSize = vViewportSize / vRenderSizeFloat;
 	}
 
 	//-----------------------------------------------------------------------
@@ -896,7 +915,7 @@ namespace hpl {
 			RenderGbufferContent();
 			return;
 		}
-		
+
 		RenderDecals();
 
 		RunCallback(eRendererMessage_PostGBuffer);
@@ -909,11 +928,10 @@ namespace hpl {
 			return;
 		}*/
 		RenderLights();
-		
+
 		//Debug:
 		//RenderSSAO();
 		//return;
-
 
 		RenderIllumination();
 
@@ -1107,6 +1125,7 @@ namespace hpl {
 		
 		cVector2f vGBufferDepthSize = cVector2f((float)pGBufferDepthTexture->GetWidth(), (float)pGBufferDepthTexture->GetHeight());
 		cVector2f vSSAOSize = cVector2f((float)mpSSAOTexture->GetWidth(), (float)mpSSAOTexture->GetHeight());
+		cVector2f vSSAOInvSize = cVector2f(1.0f / (float)mpSSAOTexture->GetWidth(), 1.0f / (float)mpSSAOTexture->GetHeight());
 
 		//////////////////////////////
 		// Set up render states
@@ -1132,7 +1151,7 @@ namespace hpl {
 		SetProgram(mpUnpackDepthProgram);
 		SetTexture(0, pGBufferDepthTexture);	//Set G-buffer depth texture
 		
-		DrawQuad(vQuadPos, vQuadSize,0, vGBufferDepthSize,true);
+		DrawQuad(vQuadPos, vQuadSize, 0, 1,true);
 
 
 		//////////////////////////////
@@ -1147,39 +1166,43 @@ namespace hpl {
 			mpSSAORenderProgram->SetFloat(kVar_afFarPlane, mfFarPlane);
 			mpSSAORenderProgram->SetFloat(kVar_afScatterLengthMul, mfSSAOScatterLengthMul);
 			mpSSAORenderProgram->SetVec2f(kVar_avScatterLengthLimits, mfSSAOScatterLengthMin,mfSSAOScatterLengthMax);
-			mpSSAORenderProgram->SetVec2f(kVar_avScreenSize,vSSAOSize);
+			mpSSAORenderProgram->SetVec2f(kVar_avScreenSize, vSSAOSize);
 			mpSSAORenderProgram->SetFloat(kVar_afDepthDiffMul, mfSSAODepthDiffMul);
 			mpSSAORenderProgram->SetFloat(kVar_afSkipEdgeLimit, mfSSAOSkipEdgeLimit);
 		}
 
 		SetProgram(mpSSAORenderProgram);
 
-		DrawQuad(vQuadPos, vQuadSize,0, vSSAOSize,true);
+		DrawQuad(vQuadPos, vQuadSize, 0, 1,true);
 
 
 		//////////////////////////////
 		// Blur SSAO
-		//if(false)
+		//if(true)
 		{
 			//Horizontal
 			SetFrameBuffer(mpSSAOBlurBuffer);
 			SetTexture(0,mpSSAOTexture);
 			SetTexture(1,mpLinearDepthTexture);
 			
-			if(mpSSAOBlurProgram[0])
+			if (mpSSAOBlurProgram[0]) {
 				mpSSAOBlurProgram[0]->SetFloat(kVar_afFarPlane, mfFarPlane);
+				mpSSAOBlurProgram[0]->SetVec2f(kVar_avInvScreenSize, vSSAOInvSize);
+			}
 			SetProgram(mpSSAOBlurProgram[0]);
-			DrawQuad(vQuadPos, vQuadSize,0, vSSAOSize,true);
+			DrawQuad(vQuadPos, vQuadSize, 0, 1, true);
 			
 			//Vertical
 			SetFrameBuffer(mpSSAOBuffer);
 			SetTexture(0,mpSSAOBlurTexture);
 			SetTexture(1,mpLinearDepthTexture);
 
-			if(mpSSAOBlurProgram[1])
+			if (mpSSAOBlurProgram[1]) {
 				mpSSAOBlurProgram[1]->SetFloat(kVar_afFarPlane, mfFarPlane);
+				mpSSAOBlurProgram[1]->SetVec2f(kVar_avInvScreenSize, vSSAOInvSize);
+			}
 			SetProgram(mpSSAOBlurProgram[1]);
-			DrawQuad(vQuadPos, vQuadSize,0, vSSAOSize,true);
+			DrawQuad(vQuadPos, vQuadSize, 0, 1, true);
 		}
         
 
@@ -1195,7 +1218,7 @@ namespace hpl {
 			SetTextureRange(NULL,1);
 
 			SetTexture(0,mpSSAOTexture);
-			DrawQuad(0,1, 0,vSSAOSize, true);
+			DrawQuad(0,1, 0,1, true);
 
 			SetNormalFrustumProjection();
 			END_RENDER_PASS();
@@ -1217,7 +1240,7 @@ namespace hpl {
 			SetTexture(0,mpSSAOTexture);
 			SetTexture(1,NULL);
 
-			DrawQuad(0,1, 0,vSSAOSize, true);
+			DrawQuad(0,1, 0,1, true);
 			SetChannelMode(eMaterialChannelMode_RGBA);
 		}
 		
@@ -1267,12 +1290,12 @@ namespace hpl {
 		SetProgram(mpEdgeSmooth_UnpackDepthProgram);
 		SetTexture(0, pGBufferDepthTexture);	//Set G-buffer depth texture
 
-		DrawQuad(vQuadPos, vQuadSize,0, mvScreenSizeFloat,true);
+		DrawQuad(vQuadPos, vQuadSize,0, 1,true);
 
 		////////////////////////////////////////////
 		// Copy the screen to temp texture
 		SetAccumulationBuffer();
-		CopyFrameBufferToTexure(mpEdgeSmooth_TempAccum,0,mvScreenSize,0, true);
+		CopyFrameBufferToTexure(mpEdgeSmooth_TempAccum,0, mvRenderSize,0, true);
 
 		//////////////////////////////
 		// Render Edge smoothing
@@ -1284,9 +1307,10 @@ namespace hpl {
 		if(mpEdgeSmooth_RenderProgram)
 		{
 			mpEdgeSmooth_RenderProgram->SetFloat(kVar_afFarPlane, mfFarPlane);
+			mpEdgeSmooth_RenderProgram->SetVec2f(kVar_avInvScreenSize, cVector2f(1.0f / mvRenderSizeFloat.x, 1.0f / mvRenderSizeFloat.y));
 		}
 
-		DrawQuad(vQuadPos, vQuadSize,0, mvScreenSizeFloat,true);
+		DrawQuad(vQuadPos, vQuadSize,0, 1,true);
 
 		/////////////////////////////
 		// Set render states back to normal
@@ -1441,6 +1465,7 @@ namespace hpl {
 		if(pProgram)
 		{
 			pProgram->SetFloat(kVar_afNegFarPlane, -mpCurrentFrustum->GetFarPlane());
+			pProgram->SetVec2f(kVar_avInvScreenSize, cVector2f(1.0f / mvRenderSizeFloat.x, 1.0f / mvRenderSizeFloat.y));
 		}
 		
 		/////////////////////////
@@ -1729,7 +1754,7 @@ namespace hpl {
 			else if(lightType == eLightType_Spot)
 			{
 				cMath::GetClipRectFromBV(	pLightData->mClipRect, *pLight->GetBoundingVolume(), mpCurrentFrustum,
-											mvScreenSize, mfScissorLastTanHalfFov);
+											mvRenderSize, mfScissorLastTanHalfFov);
 			}
 			pLightData->mlArea = pLightData->mClipRect.w * pLightData->mClipRect.h;
 
@@ -2381,6 +2406,7 @@ namespace hpl {
 		if(mpLightBoxProgram[lProgramNum])
 		{
 			mpLightBoxProgram[lProgramNum]->SetColor4f(kVar_avLightColor,pLight->GetDiffuseColor());
+			mpLightBoxProgram[lProgramNum]->SetVec2f(kVar_avInvScreenSize, cVector2f(1.0f / mvRenderSizeFloat.x, 1.0f / mvRenderSizeFloat.y));
 		}
 
 		//Blend mode
@@ -2756,6 +2782,7 @@ namespace hpl {
 			pProgram->SetVec2f(kVar_avFogStartAndLength, cVector2f(mpCurrentWorld->GetFogStart(), mpCurrentWorld->GetFogEnd() - mpCurrentWorld->GetFogStart()));
 			pProgram->SetColor4f(kVar_avFogColor, mpCurrentWorld->GetFogColor());
 			pProgram->SetFloat(kVar_afFalloffExp, mpCurrentWorld->GetFogFalloffExp());
+			pProgram->SetVec2f(kVar_avInvScreenSize, cVector2f(1.0f / mvRenderSizeFloat.x, 1.0f / mvRenderSizeFloat.y));
 		}
 
 
@@ -2831,6 +2858,7 @@ namespace hpl {
 			pProgram->SetVec2f(kVar_avFogStartAndLength, cVector2f(pFogArea->GetStart(), pFogArea->GetEnd() - pFogArea->GetStart()));
 			pProgram->SetColor4f(kVar_avFogColor, pFogArea->GetColor());
 			pProgram->SetFloat(kVar_afFalloffExp, pFogArea->GetFalloffExp());
+			pProgram->SetVec2f(kVar_avInvScreenSize, cVector2f(1.0f / mvRenderSizeFloat.x, 1.0f / mvRenderSizeFloat.y));
 		
 			/////////////////////////////////////////////
 			//Outside of box setup
@@ -2910,7 +2938,7 @@ namespace hpl {
 			////////////////////////////////////////
 			// Check the fog area alpha
 			mfTempAlpha = 1;
-			if(pMaterial->GetAffectedByFog())
+			if (pMaterial->GetAffectedByFog())
 			{
 				for(size_t i=0; i<mpCurrentSettings->mvFogRenderData.size(); ++i)
 				{
@@ -2937,7 +2965,7 @@ namespace hpl {
 
 			////////////////////////////////////////
 			// World reflection
-			if(pMaterial->HasWorldReflection() && pObject->GetRenderType() == eRenderableType_SubMesh)
+			if (pMaterial->HasWorldReflection() && pObject->GetRenderType() == eRenderableType_SubMesh)
 			{
 				if(CheckRenderablePlaneIsVisible(pObject, mpCurrentFrustum)==false) continue;
 
@@ -2956,7 +2984,7 @@ namespace hpl {
 
 			////////////////////////////////////////
 			// Refraction set up
-			if(pMaterial->HasRefraction())
+			if (pMaterial->HasRefraction())
 			{
 				if(CheckRenderablePlaneIsVisible(pObject, mpCurrentFrustum)==false) continue;
 				
@@ -2970,7 +2998,7 @@ namespace hpl {
 				
 				////////////////////////////////////
 				// Add an extra check to make sure there is no bleeding. Draw outline of mesh to alpha!
-				if(pMaterial->UseRefractionEdgeCheck())
+				if (pMaterial->UseRefractionEdgeCheck())
 				{
 					////////////////////////////////////
 					// Clear alpha
@@ -3031,7 +3059,7 @@ namespace hpl {
 
 			////////////////////////////////////////
 			// Set up and render Illumination
-			if(pMaterial->HasTranslucentIllumination())
+			if (pMaterial->HasTranslucentIllumination())
 			{
 				renderMode = renderMode == eMaterialRenderMode_Diffuse ? eMaterialRenderMode_Illumination : eMaterialRenderMode_IlluminationFog;
 
@@ -3146,7 +3174,7 @@ namespace hpl {
 		///////////////////////////////////
 		//Make render target
 		cRenderTarget renderTarget;
-		cVector2l vCurrentFrameBufferSize = mpCurrentRenderTarget->mpFrameBuffer ? mpCurrentRenderTarget->mpFrameBuffer->GetSize() : mvScreenSize;
+		cVector2l vCurrentFrameBufferSize = mpCurrentRenderTarget->mpFrameBuffer ? mpCurrentRenderTarget->mpFrameBuffer->GetSize() : mvRenderSize;
 		renderTarget.mpFrameBuffer = mpReflectionBuffer;
 		renderTarget.mvPos = mpCurrentRenderTarget->mvPos / mlReflectionSizeDiv;
 		renderTarget.mvSize.x = mpCurrentRenderTarget->mvSize.x == -1 ? vCurrentFrameBufferSize.x/mlReflectionSizeDiv : mpCurrentRenderTarget->mvSize.x/mlReflectionSizeDiv;
@@ -3475,15 +3503,15 @@ namespace hpl {
 		SetTextureRange(NULL,1);
 
 		SetTexture(0,GetBufferTexture(0));
-		DrawQuad(cVector2f(0,0),cVector2f(0.5f,0.5f), 0,mvScreenSizeFloat, true);
+		DrawQuad(cVector2f(0,0),cVector2f(0.5f,0.5f), 0, 1, true);
 		SetTexture(0,GetBufferTexture(1));
-		DrawQuad(cVector2f(0.5f,0),cVector2f(0.5f,0.5f), 0,mvScreenSizeFloat, true);
+		DrawQuad(cVector2f(0.5f,0),cVector2f(0.5f,0.5f), 0, 1, true);
 		SetTexture(0,GetBufferTexture(2));
-		DrawQuad(cVector2f(0,0.5f),cVector2f(0.5f,0.5f), 0,mvScreenSizeFloat, true);
+		DrawQuad(cVector2f(0,0.5f),cVector2f(0.5f,0.5f), 0, 1, true);
 		if(mlNumOfGBufferTextures > 3)
 		{
 			SetTexture(0,GetBufferTexture(3));
-			DrawQuad(cVector2f(0.5f,0.5f),cVector2f(0.5f,0.5f), 0,mvScreenSizeFloat, true);
+			DrawQuad(cVector2f(0.5f,0.5f),cVector2f(0.5f,0.5f), 0, 1, true);
 		}
 		
 
@@ -3512,7 +3540,7 @@ namespace hpl {
 		SetTextureRange(NULL,1);
 
 		SetTexture(0,mpReflectionTexture);
-		DrawQuad(cVector2f(0,0),cVector2f(1,1), 0, mvScreenSizeFloat / (float)mlReflectionSizeDiv, true);
+		DrawQuad(cVector2f(0,0),cVector2f(1,1), 0, 1.0f, true);
 		
 
 		SetNormalFrustumProjection();

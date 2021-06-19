@@ -56,6 +56,7 @@ namespace hpl {
 	#define kVar_avFrenselBiasPow					7
 	#define kVar_avRimLightMulPow					8
 	#define kVar_afLightLevel						9
+	#define kVar_avInvScreenSize					10
 	
 	
 	//------------------------------
@@ -159,7 +160,7 @@ namespace hpl {
 			if(i==3) defaultVars.Add("BlendMode_Alpha");
 			if(i==4) defaultVars.Add("BlendMode_PremulAlpha");
 
-			mpBlendProgramManager[i]->SetupGenerateProgramData(	eMaterialRenderMode_Diffuse,"Diffuse","deferred_base_vtx.glsl", "deferred_transparent_frag.glsl", 
+			mpBlendProgramManager[i]->SetupGenerateProgramData(	eMaterialRenderMode_Diffuse,"Diffuse","deferred_base_vtx.glsl", "deferred_2d_transparent_frag.glsl", 
 														vDiffuseFeatureVec,kDiffuseFeatureNum, defaultVars);
 
 			////////////////////////////////
@@ -174,6 +175,7 @@ namespace hpl {
 			mpBlendProgramManager[i]->AddGenerateProgramVariableId("avFrenselBiasPow", kVar_avFrenselBiasPow, eMaterialRenderMode_Diffuse);
 			mpBlendProgramManager[i]->AddGenerateProgramVariableId("avRimLightMulPow", kVar_avRimLightMulPow, eMaterialRenderMode_Diffuse);
 			mpBlendProgramManager[i]->AddGenerateProgramVariableId("afLightLevel", kVar_afLightLevel, eMaterialRenderMode_Diffuse);
+			mpBlendProgramManager[i]->AddGenerateProgramVariableId("avInvScreenSize", kVar_avInvScreenSize, eMaterialRenderMode_Diffuse);
 		
 		}
 	}
@@ -320,6 +322,7 @@ namespace hpl {
 		if(bRefractionEnabled && (aRenderMode == eMaterialRenderMode_DiffuseFog || aRenderMode == eMaterialRenderMode_Diffuse) )
 		{
 			apProgram->SetFloat(kVar_afRefractionScale, pVars->mfRefractionScale * (float)apRenderer->GetRenderTargetSize().x);
+			apProgram->SetVec2f(kVar_avInvScreenSize, cVector2f(1.0f / (float)apRenderer->GetRenderTargetSize().x, 1.0f / (float)apRenderer->GetRenderTargetSize().y));
 		}
 
 		////////////////////////////

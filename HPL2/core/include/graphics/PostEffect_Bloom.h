@@ -32,7 +32,7 @@ namespace hpl {
 		cPostEffectParams_Bloom() : iPostEffectParams("Bloom"),  
 			mvRgbToIntensity(0.3f, 0.58f, 0.12f),
 			mlBlurIterations(2),
-			mfBlurSize(1.0f)
+			mfBlurSize(1.0f/1000.0f)
 		{}
 		
 		kPostEffectParamsClassInit(cPostEffectParams_Bloom)

@@ -248,7 +248,7 @@ void cLuxLoadScreenHandler::DrawMenuScreen()
 
 	//////////////////////
 	//Load Image
-	cGuiGfxElement *pImage = mpGui->CreateGfxTexture("menu_loading_screen.jpg", eGuiMaterial_Alpha, eTextureType_Rect);
+	cGuiGfxElement *pImage = mpGui->CreateGfxTexture("menu_loading_screen.jpg", eGuiMaterial_Alpha, eTextureType_2D);
 
 	//////////////////////
 	//Draw Image
@@ -356,7 +356,7 @@ void cLuxLoadScreenHandler::LoadCurrentImage(const tString &asImage)
 	if(mpCurrentImage && msCurrentImage == asImage) return;
 
 	msCurrentImage = asImage;
-	mpCurrentImage = mpGui->CreateGfxTexture(asImage, eGuiMaterial_Alpha, eTextureType_Rect);
+	mpCurrentImage = mpGui->CreateGfxTexture(asImage, eGuiMaterial_Alpha, eTextureType_2D);
 }
 
 //-----------------------------------------------------------------------

@@ -57,7 +57,7 @@ namespace hpl {
 			cParserVarContainer vars;
 			if(i==1) vars.Add("BlurHorisontal");
 			mpBlurProgram[i] = mpGraphics->CreateGpuProgramFromShaders("BloomBlur",	"posteffect_bloom_blur_vtx.glsl",
-																					"posteffect_bloom_blur_frag.glsl", &vars);
+																					"posteffect_2d_bloom_blur_frag.glsl", &vars);
 
 			if(mpBlurProgram[i])
 			{
@@ -69,7 +69,7 @@ namespace hpl {
 		vars.Add("UseUv");
 		vars.Add("UseUvCoord1");
 		mpBloomProgram = mpGraphics->CreateGpuProgramFromShaders(	"BloomBlur",	"deferred_base_vtx.glsl",
-																					"posteffect_bloom_add_frag.glsl", &vars);
+																					"posteffect_2d_bloom_add_frag.glsl", &vars);
 		if(mpBloomProgram)
 		{
 			mpBloomProgram->GetVariableAsId("avRgbToIntensity",kVar_avRgbToIntensity);
@@ -103,7 +103,7 @@ namespace hpl {
 
 	cPostEffect_Bloom::cPostEffect_Bloom(cGraphics *apGraphics, cResources *apResources, iPostEffectType *apType) : iPostEffect(apGraphics,apResources,apType)
 	{
-		cVector2l vSize = mpLowLevelGraphics->GetScreenSizeInt();
+		cVector2l vSize = mpLowLevelGraphics->GetRenderSizeInt();
 		
 		for(int i=0;i<2; ++i)
 		{

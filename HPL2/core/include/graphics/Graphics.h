@@ -87,7 +87,7 @@ namespace hpl {
 
 		bool Init(int alWidth, int alHeight, int alDisplay, int alBpp, int abFullscreen, int alMultisampling,
 					eGpuProgramFormat aGpuProgramFormat,const tString &asWindowCaption, const cVector2l &avWindowPos,
-					cResources* apResources, tFlag alHplSetupFlags);
+					const cVector2l& avWindowSize, cResources* apResources, tFlag alHplSetupFlags);
 
 		void Update(float afTimeStep);
 
